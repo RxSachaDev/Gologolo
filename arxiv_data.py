@@ -28,12 +28,25 @@ def collect_arxiv_posts(taille_docs: int):
 
     # Listes contenant les textes et leur origine
     docs = []
-    origins = []
 
     for entry in entries:
-        texte = entry['summary'].replace('\n', ' ').strip()
+        title = entry['title'].replace('\n', ' ').strip()
+        # Gérer les cas de liste ou non 
+        if isinstance(entry['author'], list):
+            authors = [author['name'] for author in entry['author']]
+        else:
+            authors = [entry['author']['name']]
+        date = entry['published']
+        url = entry['id']
+        text = entry['summary'].replace('\n', ' ').strip()
 
-        docs.append(texte)
-        origins.append("arxiv")
+        docs.append({
+            "title": title,
+            "authors": authors,
+            "date": date,
+            "url": url,
+            "text": text,
+            "origin" : "arxiv"
+        })
 
-    return docs, origins
+    return docs

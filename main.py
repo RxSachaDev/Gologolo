@@ -13,20 +13,23 @@ if __name__ == "__main__":
     else:
 
         # Récupération Reddit
-        docs_reddit, origins_reddit = collect_reddit_posts(taille_docs)
+        docs_reddit = collect_reddit_posts(taille_docs)
 
         # Récupération ArXiv
-        docs_arxiv, origins_arxiv = collect_arxiv_posts(taille_docs)
+        docs_arxiv = collect_arxiv_posts(taille_docs)
 
         # Fusion des deux sources
         docs = docs_reddit + docs_arxiv
-        origins = origins_reddit + origins_arxiv
 
         # Création du DataFrame
         df = pd.DataFrame({
             "id": range(len(docs)),
-            "text": docs,
-            "origin": origins
+            "title": [doc["title"] for doc in docs],
+            "authors": [doc["authors"] for doc in docs],
+            "date": [doc["date"] for doc in docs],
+            "url": [doc["url"] for doc in docs],
+            "text": [doc["text"] for doc in docs],
+            "origin": [doc["origin"] for doc in docs]
         })
 
         # Sauvegarde

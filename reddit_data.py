@@ -16,12 +16,22 @@ def collect_reddit_posts(taille_docs: int):
     posts = list(subr.hot(limit=taille_docs))
 
     docs = []
-    origins = []
 
     for post in posts:
         if post.selftext:
-            texte = post.selftext.replace("\n", " ")
-            docs.append(texte)
-            origins.append("reddit")
+            title = post.title
+            author = str(post.author)
+            date = post.created_utc
+            url = "https://www.reddit.com" + post.permalink
+            text = post.selftext.replace("\n", " ")
 
-    return docs, origins
+            docs.append({
+                "title": title,
+                "authors": [author],
+                "date": date,
+                "url": url,
+                "text": text,
+                "origin" : "reddit"
+            })
+
+    return docs
