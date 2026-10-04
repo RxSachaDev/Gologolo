@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass
-class Document:
+class Author:
     name: str
     nb_docs: int
     production: dict
