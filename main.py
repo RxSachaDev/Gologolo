@@ -4,6 +4,7 @@ from Document import Document
 from Author import Author
 from reddit_data import collect_reddit_posts
 from arxiv_data import collect_arxiv_posts
+import numpy as np
 
 if __name__ == "__main__":
 
@@ -26,12 +27,25 @@ if __name__ == "__main__":
 
         documents = {i: doc for i, doc in enumerate(all_docs)}
 
-        authors: dict[str, Author]
+        authors: dict[str, Author] = {}
         for doc in documents.values():
             for author in doc.authors:
                 if author not in authors:
                     authors[author] = Author(name=author, nb_docs=0, production={})
                 authors[author].add(doc)
+
+        author_name = input("Nom de l'auteur : ").strip()
+
+        if author_name in authors:
+            author = authors[author_name]
+            average_words = sum(
+                len(doc.text.split()) for doc in author.production.values()
+            ) / author.nb_docs
+
+            print(f"{author.nb_docs} document(s)")
+            print(f"Taille moyenne : {average_words:.2f} mots")
+        else:
+            print("Auteur introuvable")
 
         # Création du DataFrame
         df = pd.DataFrame([
