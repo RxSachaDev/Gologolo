@@ -1,6 +1,7 @@
 import ast
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -53,10 +54,12 @@ class Corpus:
     @classmethod
     def load(cls, path: str = "corpus.csv") -> "Corpus":
         df = pd.read_csv(path, sep="\t")
-        if "corpus_name" not in df.columns or df["corpus_name"].dropna().empty:
-            raise ValueError("Le fichier ne contient pas le nom du corpus.")
+        if "corpus_name" in df.columns and not df["corpus_name"].dropna().empty:
+            corpus_name = str(df["corpus_name"].dropna().iloc[0])
+        else:
+            corpus_name = Path(path).stem
 
-        corpus = cls(name=str(df["corpus_name"].dropna().iloc[0]))
+        corpus = cls(name=corpus_name)
         for row in df.to_dict(orient="records"):
             if pd.isna(row.get("id")):
                 continue

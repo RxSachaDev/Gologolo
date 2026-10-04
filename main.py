@@ -1,70 +1,53 @@
 import os
 import pandas as pd
-from Document import Document
-from Author import Author
+from Corpus import Corpus
 from reddit_data import collect_reddit_posts
 from arxiv_data import collect_arxiv_posts
-import numpy as np
 
 if __name__ == "__main__":
 
     taille_docs = 10
     theme = "tennis"
 
-    if (os.path.exists("corpus.csv")):
-        df = pd.read_csv("corpus.csv", sep="\t")
-        print(df)
+    corpus_path = "corpus.csv"
+    if os.path.exists(corpus_path):
+        corpus = Corpus.load(corpus_path)
     else:
-
-        # Récupération Reddit
+        corpus = Corpus(name=theme)
         docs_reddit = collect_reddit_posts(taille_docs, theme)
-
-        # Récupération ArXiv
         docs_arxiv = collect_arxiv_posts(taille_docs, theme)
 
-        # Fusion des deux sources
-        all_docs: list[Document] = docs_reddit + docs_arxiv
+        for doc in docs_reddit + docs_arxiv:
+            corpus.add_document(doc)
 
-        documents = {i: doc for i, doc in enumerate(all_docs)}
+    corpus.save(corpus_path)
+    corpus = Corpus.load(corpus_path)
+    print(corpus)
 
-        authors: dict[str, Author] = {}
-        for doc in documents.values():
-            for author in doc.authors:
-                if author not in authors:
-                    authors[author] = Author(name=author, nb_docs=0, production={})
-                authors[author].add(doc)
+    author_name = input("Nom de l'auteur : ").strip()
+    if author_name in corpus.authors:
+        author = corpus.authors[author_name]
+        average_words = sum(
+            len(doc.text.split()) for doc in author.production.values()
+        ) / author.nb_docs
+        print(f"{author.nb_docs} document(s)")
+        print(f"Taille moyenne : {average_words:.2f} mots")
+    else:
+        print("Auteur introuvable")
 
-        author_name = input("Nom de l'auteur : ").strip()
-
-        if author_name in authors:
-            author = authors[author_name]
-            average_words = sum(
-                len(doc.text.split()) for doc in author.production.values()
-            ) / author.nb_docs
-
-            print(f"{author.nb_docs} document(s)")
-            print(f"Taille moyenne : {average_words:.2f} mots")
-        else:
-            print("Auteur introuvable")
-
-        # Création du DataFrame
-        df = pd.DataFrame([
-            {
-                "id": document_id,
-                "title": doc.title,
-                "authors": doc.authors,
-                "date": doc.date,
-                "url": doc.url,
-                "text": doc.text,
-                "origin": doc.origin
-            }
-            for document_id, doc in documents.items()
-        ])
-
-        # Sauvegarde
-        df.to_csv("corpus.csv", sep="\t", index=False)
-
-        print(df)
+    df = pd.DataFrame([
+        {
+            "id": document_id,
+            "title": doc.title,
+            "authors": doc.authors,
+            "date": doc.date,
+            "url": doc.url,
+            "text": doc.text,
+            "origin": doc.origin
+        }
+        for document_id, doc in corpus.documents.items()
+    ])
+    print(df)
 
     print(len(df))
     
