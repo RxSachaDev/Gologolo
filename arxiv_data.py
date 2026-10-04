@@ -1,11 +1,12 @@
 import urllib.request
 import xmltodict
-import pandas as pd
+from datetime import datetime
+from Document import Document
 
 
-def collect_arxiv_posts(taille_docs: int):
+def collect_arxiv_posts(taille_docs: int, theme: str):
 
-    url = "http://export.arxiv.org/api/query?search_query=all:tennis&start=0&max_results=" + str(taille_docs)
+    url = f"http://export.arxiv.org/api/query?search_query=all:{theme}&start=0&max_results={str(taille_docs)}"
 
     # Requête avec User-Agent
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -36,17 +37,19 @@ def collect_arxiv_posts(taille_docs: int):
             authors = [author['name'] for author in entry['author']]
         else:
             authors = [entry['author']['name']]
-        date = entry['published']
+        date = datetime.fromisoformat(entry['published'].replace('Z', '+00:00'))
         url = entry['id']
         text = entry['summary'].replace('\n', ' ').strip()
 
-        docs.append({
-            "title": title,
-            "authors": authors,
-            "date": date,
-            "url": url,
-            "text": text,
-            "origin" : "arxiv"
-        })
+        docs.append(
+            Document(
+                title = title,
+                authors = authors,
+                date = date,
+                url = url,
+                text = text,
+                origin = "arxiv"
+            )
+        )
 
     return docs
