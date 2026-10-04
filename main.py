@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from Document import Document
+from Author import Author
 from reddit_data import collect_reddit_posts
 from arxiv_data import collect_arxiv_posts
 
@@ -24,6 +25,13 @@ if __name__ == "__main__":
         all_docs: list[Document] = docs_reddit + docs_arxiv
 
         documents = {i: doc for i, doc in enumerate(all_docs)}
+
+        authors: dict[str, Author]
+        for doc in documents.values():
+            for author in doc.authors:
+                if author not in authors:
+                    authors[author] = Author(name=author, nb_docs=0, production={})
+                authors[author].add(doc)
 
         # Création du DataFrame
         df = pd.DataFrame([
