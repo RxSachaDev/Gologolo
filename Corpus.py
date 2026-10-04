@@ -7,7 +7,7 @@ class Corpus:
     name: str
     documents: dict[int, Document] 
     id_document: int = 0
-    authors: dict[str, Author]
+    authors: dict[str, Author] 
 
     def add_document(self, doc: Document) -> None:
         document_id = self.id_document
@@ -22,4 +22,27 @@ class Corpus:
                     production={}
                 )
             self.authors[author_name].add(doc)
+
+    def display_documents_date_sorted(self, number: int) -> None:
+        docs_sorted = sorted(
+            self.documents.values(),
+            key=lambda doc: doc.date,
+            reverse=True
+        )
+        for doc in docs_sorted[:max(0, number)]:
+            print(f"{doc.date} - {doc.title}")
+
+    def display_documents_title_sorted(self, number: int) -> None:
+        docs_sorted = sorted(
+            self.documents.values(),
+            key=lambda doc: doc.title.casefold()
+        )
+        for doc in docs_sorted[:max(0, number)]:
+            print(f"{doc.title} - {doc.date}")
+
+    def __repr__(self) -> str:
+        return (
+            f"Corpus(name={self.name}, documents={len(self.documents)}, "
+            f"authors={len(self.authors)})"
+        )
 
