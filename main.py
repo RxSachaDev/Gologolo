@@ -40,6 +40,7 @@ if __name__ == "__main__":
             "id": document_id,
             "title": doc.title,
             "authors": doc.author,
+            "source": doc.getType(),
             "date": doc.date,
             "url": doc.url,
             "text": doc.text,

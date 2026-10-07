@@ -8,6 +8,7 @@ class Document:
     date: datetime
     url: str
     text: str
+    type: str = "Document"
 
     def __str__(self):
         return f"Titre : {self.title}\n"
@@ -16,8 +17,11 @@ class Document:
 class RedditDocument(Document):
     def __init__(
         self, title: str, author: str, date: datetime, url: str, text: str, num_comments: int) -> None:
-        super().__init__(title, author, date, url, text)
+        super().__init__(title, author, date, url, text, "Reddit")
         self.num_comments = num_comments
+
+    def getType(self) -> str:
+        return self.type
 
     def get_num_comments(self) -> int:
         return self.num_comments
@@ -36,8 +40,11 @@ class ArxivDocument(Document):
     def __init__(
         self, title: str, author: str, date: datetime, url: str, text: str, coauthors: list[str],
     ) -> None:
-        super().__init__(title, author, date, url, text)
+        super().__init__(title, author, date, url, text, "Arxiv")
         self.coauthors = coauthors
+
+    def getType(self) -> str:
+        return self.type
 
     def get_coauthors(self) -> list[str]:
         return self.coauthors

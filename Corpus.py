@@ -38,9 +38,12 @@ class Corpus:
                 "id": document_id,
                 "title": doc.title,
                 "author": doc.author,
+                "type": doc.getType(),
                 "date": doc.date.isoformat(),
                 "url": doc.url,
                 "text": doc.text,
+                "num_comments": getattr(doc, "num_comments", None),
+                "coauthors": repr(getattr(doc, "coauthors", [])),
             }
             for document_id, doc in self.documents.items()
         ]
@@ -62,13 +65,33 @@ class Corpus:
             if pd.isna(row.get("id")):
                 continue
 
-            doc = Document(
-                title=row["title"],
-                author=row["author"],
-                date=datetime.fromisoformat(row["date"]),
-                url=row["url"],
-                text=row["text"],
-            )
+            if row["type"] == "Reddit":
+                num_comments = row.get("num_comments", 0)
+                if pd.isna(num_comments):
+                    num_comments = 0
+                doc = RedditDocument(
+                    title=row["title"],
+                    author=row["author"],
+                    date=datetime.fromisoformat(row["date"]),
+                    url=row["url"],
+                    text=row["text"],
+                    num_comments=int(num_comments),
+                )
+            else:
+                coauthors_value = row.get("coauthors", "[]")
+                if not isinstance(coauthors_value, str) or pd.isna(coauthors_value):
+                    coauthors = []
+                else:
+                    coauthors = ast.literal_eval(coauthors_value)
+                doc = ArxivDocument(
+                    title=row["title"],
+                    author=row["author"],
+                    date=datetime.fromisoformat(row["date"]),
+                    url=row["url"],
+                    text=row["text"],
+                    coauthors=coauthors,
+                )
+            
             document_id = int(row["id"])
             corpus.documents[document_id] = doc
             corpus.id_document = max(corpus.id_document, document_id + 1)
@@ -83,7 +106,7 @@ class Corpus:
             reverse=True
         )
         for doc in docs_sorted[:max(0, number)]:
-            print(f"{doc.date} - {doc.title}")
+            print(f"{doc.date} - {doc.title} [{doc.getType()}]")
 
     def display_documents_title_sorted(self, number: int) -> None:
         docs_sorted = sorted(
@@ -91,7 +114,7 @@ class Corpus:
             key=lambda doc: doc.title.casefold()
         )
         for doc in docs_sorted[:max(0, number)]:
-            print(f"{doc.title} - {doc.date}")
+            print(f"{doc.title} - {doc.date} [{doc.getType()}]")
 
     def __repr__(self) -> str:
         return (
