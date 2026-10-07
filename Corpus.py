@@ -8,6 +8,19 @@ import pandas as pd
 from Document import ArxivDocument, Document, RedditDocument
 from Author import Author
 
+
+def singleton(cls):
+    instance = [None]
+
+    def wrapper(*args, **kwargs):
+        if instance[0] is None:
+            instance[0] = cls(*args, **kwargs)
+        return instance[0]
+
+    return wrapper
+
+
+@singleton
 @dataclass
 class Corpus:
     name: str
@@ -52,15 +65,17 @@ class Corpus:
 
         pd.DataFrame(rows).to_csv(path, sep="\t", index=False)
 
-    @classmethod
-    def load(cls, path: str = "corpus.csv") -> "Corpus":
+    def load(self, path: str = "corpus.csv") -> "Corpus":
         df = pd.read_csv(path, sep="\t")
         if "corpus_name" in df.columns and not df["corpus_name"].dropna().empty:
             corpus_name = str(df["corpus_name"].dropna().iloc[0])
         else:
             corpus_name = Path(path).stem
 
-        corpus = cls(name=corpus_name)
+        self.name = corpus_name
+        self.documents.clear()
+        self.id_document = 0
+        self.authors.clear()
         for row in df.to_dict(orient="records"):
             if pd.isna(row.get("id")):
                 continue
@@ -93,11 +108,11 @@ class Corpus:
                 )
             
             document_id = int(row["id"])
-            corpus.documents[document_id] = doc
-            corpus.id_document = max(corpus.id_document, document_id + 1)
-            corpus._add_document_to_authors(doc)
+            self.documents[document_id] = doc
+            self.id_document = max(self.id_document, document_id + 1)
+            self._add_document_to_authors(doc)
 
-        return corpus
+        return self
 
     def display_documents_date_sorted(self, number: int) -> None:
         docs_sorted = sorted(

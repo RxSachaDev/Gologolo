@@ -10,10 +10,10 @@ if __name__ == "__main__":
     theme = "tennis"
 
     corpus_path = "corpus.csv"
+    corpus = Corpus(name=theme)
     if os.path.exists(corpus_path):
-        corpus = Corpus.load(corpus_path)
+        corpus.load(corpus_path)
     else:
-        corpus = Corpus(name=theme)
         docs_reddit = collect_reddit_posts(taille_docs, theme)
         docs_arxiv = collect_arxiv_posts(taille_docs, theme)
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
             corpus.add_document(doc)
 
     corpus.save(corpus_path)
-    corpus = Corpus.load(corpus_path)
+    corpus.load(corpus_path)
     print(corpus)
 
     author_name = input("Nom de l'auteur : ").strip()
