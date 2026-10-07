@@ -1,7 +1,7 @@
 import urllib.request
 import xmltodict
 from datetime import datetime
-from Document import Document
+from Document import ArxivDocument
 
 
 def collect_arxiv_posts(taille_docs: int, theme: str):
@@ -27,7 +27,7 @@ def collect_arxiv_posts(taille_docs: int, theme: str):
 
     print("Nombre d'articles ArXiv trouvés :", len(entries))
 
-    # Listes contenant les textes et leur origine
+    # Listes contenant les textes
     docs = []
 
     for entry in entries:
@@ -42,13 +42,13 @@ def collect_arxiv_posts(taille_docs: int, theme: str):
         text = entry['summary'].replace('\n', ' ').strip()
 
         docs.append(
-            Document(
+            ArxivDocument(
                 title = title,
-                authors = authors,
+                author = authors[0],
                 date = date,
                 url = url,
                 text = text,
-                origin = "arxiv"
+                coauthors = authors[1:]
             )
         )
 

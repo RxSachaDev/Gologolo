@@ -8,7 +8,6 @@ class Document:
     date: datetime
     url: str
     text: str
-    origin: str
 
     def __str__(self):
         return f"Titre : {self.title}\n"
@@ -16,8 +15,8 @@ class Document:
 
 class RedditDocument(Document):
     def __init__(
-        self, title: str, authors: str, date: datetime, url: str, text: str, origin: str, num_comments: int) -> None:
-        super().__init__(title, authors, date, url, text, origin)
+        self, title: str, author: str, date: datetime, url: str, text: str, num_comments: int) -> None:
+        super().__init__(title, author, date, url, text)
         self.num_comments = num_comments
 
     def get_num_comments(self) -> int:
@@ -35,9 +34,9 @@ class RedditDocument(Document):
 
 class ArxivDocument(Document):
     def __init__(
-        self, title: str, author: str, date: datetime, url: str, text: str, origin: str ,coauthors: list[str],
+        self, title: str, author: str, date: datetime, url: str, text: str, coauthors: list[str],
     ) -> None:
-        super().__init__(title, author, date, url, text, origin)
+        super().__init__(title, author, date, url, text)
         self.coauthors = coauthors
 
     def get_coauthors(self) -> list[str]:

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from Document import Document
+from Document import ArxivDocument, Document, RedditDocument
 from Author import Author
 
 @dataclass
@@ -23,14 +23,13 @@ class Corpus:
         self._add_document_to_authors(doc)
 
     def _add_document_to_authors(self, doc: Document) -> None:
-        for author_name in dict.fromkeys(doc.authors):
-            if author_name not in self.authors:
-                self.authors[author_name] = Author(
-                    name=author_name,
-                    nb_docs=0,
-                    production={}
-                )
-            self.authors[author_name].add(doc)
+        if doc.author not in self.authors:
+            self.authors[doc.author] = Author(
+                name=doc.author,
+                nb_docs=0,
+                production={}
+            )
+        self.authors[doc.author].add(doc)
 
     def save(self, path: str = "corpus.csv") -> None:
         rows = [
@@ -38,11 +37,10 @@ class Corpus:
                 "corpus_name": self.name,
                 "id": document_id,
                 "title": doc.title,
-                "authors": repr(doc.authors),
+                "author": doc.author,
                 "date": doc.date.isoformat(),
                 "url": doc.url,
                 "text": doc.text,
-                "origin": doc.origin,
             }
             for document_id, doc in self.documents.items()
         ]
@@ -64,14 +62,12 @@ class Corpus:
             if pd.isna(row.get("id")):
                 continue
 
-            authors = ast.literal_eval(row["authors"])
             doc = Document(
                 title=row["title"],
-                authors=authors,
+                author=row["author"],
                 date=datetime.fromisoformat(row["date"]),
                 url=row["url"],
                 text=row["text"],
-                origin=row["origin"],
             )
             document_id = int(row["id"])
             corpus.documents[document_id] = doc

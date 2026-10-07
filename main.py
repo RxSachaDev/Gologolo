@@ -39,11 +39,10 @@ if __name__ == "__main__":
         {
             "id": document_id,
             "title": doc.title,
-            "authors": doc.authors,
+            "authors": doc.author,
             "date": doc.date,
             "url": doc.url,
             "text": doc.text,
-            "origin": doc.origin
         }
         for document_id, doc in corpus.documents.items()
     ])

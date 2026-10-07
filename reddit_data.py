@@ -2,7 +2,7 @@ import praw
 import os
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from Document import Document
+from Document import RedditDocument
 
 load_dotenv()
 
@@ -21,19 +21,19 @@ def collect_reddit_posts(taille_docs: int, theme: str):
     for post in posts:
         if post.selftext:
             title = post.title
-            authors = [str(post.author)]
+            author = str(post.author)
             date = datetime.fromtimestamp(post.created_utc, tz=timezone.utc)
             url = "https://www.reddit.com" + post.permalink
             text = post.selftext.replace("\n", " ")
 
             docs.append(
-                Document(
+                RedditDocument(
                     title = title,
-                    authors = authors,
+                    author = author,
                     date = date,
                     url = url,
                     text = text,
-                    origin = "reddit"
+                    num_comments = post.num_comments
                 )
             )
 
