@@ -1,4 +1,5 @@
 import ast
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -27,11 +28,13 @@ class Corpus:
     documents: dict[int, Document] = field(default_factory=dict)
     id_document: int = 0
     authors: dict[str, Author] = field(default_factory=dict)
+    concatenated_text: str = ""
 
     def add_document(self, doc: Document) -> None:
         document_id = self.id_document
         self.documents[document_id] = doc
         self.id_document += 1
+        self.concatenated_text = ""
 
         self._add_document_to_authors(doc)
 
@@ -45,9 +48,13 @@ class Corpus:
         self.authors[doc.author].add(doc)
 
     def save(self, path: str = "corpus.csv") -> None:
+
         rows = [
             {
                 "corpus_name": self.name,
+                "concatenated_text": (
+                    self.concatenated_text if index == 0 else None
+                ),
                 "id": document_id,
                 "title": doc.title,
                 "author": doc.author,
@@ -58,10 +65,13 @@ class Corpus:
                 "num_comments": getattr(doc, "num_comments", None),
                 "coauthors": repr(getattr(doc, "coauthors", [])),
             }
-            for document_id, doc in self.documents.items()
+            for index, (document_id, doc) in enumerate(self.documents.items())
         ]
         if not rows:
-            rows.append({"corpus_name": self.name})
+            rows.append({
+                "corpus_name": self.name,
+                "concatenated_text": self.concatenated_text,
+            })
 
         pd.DataFrame(rows).to_csv(path, sep="\t", index=False)
 
@@ -76,6 +86,11 @@ class Corpus:
         self.documents.clear()
         self.id_document = 0
         self.authors.clear()
+        self.concatenated_text = ""
+        if "concatenated_text" in df.columns:
+            saved_text = df["concatenated_text"].dropna()
+            if not saved_text.empty:
+                self.concatenated_text = str(saved_text.iloc[0])
         for row in df.to_dict(orient="records"):
             if pd.isna(row.get("id")):
                 continue
@@ -147,3 +162,25 @@ class Corpus:
             f"Corpus(name={self.name}, documents={len(self.documents)}, "
             f"authors={len(self.authors)})"
         )
+
+    def search(self, keyword: str):
+        if keyword == "":
+          return []        
+          
+        if self.concatenated_text == "":
+            df = pd.DataFrame([
+                {
+                    "id": document_id,
+                    "title": doc.title,
+                    "authors": doc.author,
+                    "source": doc.getType(),
+                    "date": doc.date,
+                    "url": doc.url,
+                    "text": doc.text,
+                }
+                for document_id, doc in self.documents.items()
+            ])
+
+            self.concatenated_text = " ".join(df["text"])
+
+        return re.findall(r"[^.]*\b" + keyword + r"\b[^.]*", self.concatenated_text, re.IGNORECASE)
