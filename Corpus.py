@@ -216,6 +216,7 @@ class Corpus:
     def stats(self) -> None:
         vocabulary = dict()
         different_words = set()
+        document_frequency = dict()
 
         for doc in self.documents.values():
             text = clean_text(doc.text)
@@ -223,5 +224,19 @@ class Corpus:
 
             different_words.update(words)
 
-        for word in different_words:
-            vocabulary[word] = 0
+            for word in words:
+                if word not in vocabulary:
+                    vocabulary[word] = 1
+                else:
+                    vocabulary[word] += 1
+
+            for word in different_words:
+                document_frequency[word] = document_frequency.get(word, 0) + 1
+
+        freq = pd.DataFrame({
+            "TF": vocabulary,
+            "DF": document_frequency
+        })
+
+        print("Nombre de mots différents :", len(different_words))
+        print(freq.sort_values(by="TF", ascending=False).head(10))
