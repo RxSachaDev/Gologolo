@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from Document import ArxivDocument, Document, RedditDocument
+from Document import Document, DocumentFactory
 from Author import Author
 
 
@@ -84,7 +84,8 @@ class Corpus:
                 num_comments = row.get("num_comments", 0)
                 if pd.isna(num_comments):
                     num_comments = 0
-                doc = RedditDocument(
+                doc = DocumentFactory.create_document(
+                    source="Reddit",
                     title=row["title"],
                     author=row["author"],
                     date=datetime.fromisoformat(row["date"]),
@@ -92,19 +93,29 @@ class Corpus:
                     text=row["text"],
                     num_comments=int(num_comments),
                 )
-            else:
+            elif row["type"] == "Arxiv":
                 coauthors_value = row.get("coauthors", "[]")
                 if not isinstance(coauthors_value, str) or pd.isna(coauthors_value):
                     coauthors = []
                 else:
                     coauthors = ast.literal_eval(coauthors_value)
-                doc = ArxivDocument(
+                doc = DocumentFactory.create_document(
+                    source="Arxiv",
                     title=row["title"],
                     author=row["author"],
                     date=datetime.fromisoformat(row["date"]),
                     url=row["url"],
                     text=row["text"],
                     coauthors=coauthors,
+                )
+            else:
+                doc = DocumentFactory.create_document(
+                    source=row["type"],
+                    title=row["title"],
+                    author=row["author"],
+                    date=datetime.fromisoformat(row["date"]),
+                    url=row["url"],
+                    text=row["text"],
                 )
             
             document_id = int(row["id"])
@@ -136,4 +147,3 @@ class Corpus:
             f"Corpus(name={self.name}, documents={len(self.documents)}, "
             f"authors={len(self.authors)})"
         )
-

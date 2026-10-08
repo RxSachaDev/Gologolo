@@ -2,7 +2,7 @@ import praw
 import os
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from Document import RedditDocument
+from Document import DocumentFactory
 
 load_dotenv()
 
@@ -27,7 +27,8 @@ def collect_reddit_posts(taille_docs: int, theme: str):
             text = post.selftext.replace("\n", " ")
 
             docs.append(
-                RedditDocument(
+                DocumentFactory.create_document(
+                    source="Reddit",
                     title = title,
                     author = author,
                     date = date,

@@ -1,7 +1,7 @@
 import urllib.request
 import xmltodict
 from datetime import datetime
-from Document import ArxivDocument
+from Document import DocumentFactory
 
 
 def collect_arxiv_posts(taille_docs: int, theme: str):
@@ -42,7 +42,8 @@ def collect_arxiv_posts(taille_docs: int, theme: str):
         text = entry['summary'].replace('\n', ' ').strip()
 
         docs.append(
-            ArxivDocument(
+            DocumentFactory.create_document(
+                source="Arxiv",
                 title = title,
                 author = authors[0],
                 date = date,
