@@ -163,7 +163,7 @@ class Corpus:
             f"authors={len(self.authors)})"
         )
 
-    def search(self, keyword: str):
+    def search(self, keyword: str) -> list[str]:
         if keyword == "":
           return []        
           
@@ -184,3 +184,30 @@ class Corpus:
             self.concatenated_text = " ".join(df["text"])
 
         return re.findall(r"[^.]*\b" + keyword + r"\b[^.]*", self.concatenated_text, re.IGNORECASE)
+
+    def concorde(self, keyword: str, size_context: int) -> list[str]:
+        if self.concatenated_text == "":
+            df = pd.DataFrame([
+                {
+                    "id": document_id,
+                    "title": doc.title,
+                    "authors": doc.author,
+                    "source": doc.getType(),
+                    "date": doc.date,
+                    "url": doc.url,
+                    "text": doc.text,
+                }
+                for document_id, doc in self.documents.items()
+            ])
+        
+            self.concatenated_text = " ".join(df["text"])
+
+        resultats = re.findall(
+            r"(.{0," + str(size_context) + r"})"
+            + r"(" + re.escape(keyword) + r")"
+            + r"(.{0," + str(size_context) + r"})",
+            self.concatenated_text,
+            re.IGNORECASE
+        )
+
+        return pd.DataFrame(resultats, columns=["contexte gauche", "expression", "contexte droit"])
