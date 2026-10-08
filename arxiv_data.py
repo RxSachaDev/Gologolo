@@ -8,14 +8,11 @@ def collect_arxiv_posts(taille_docs: int, theme: str):
 
     url = f"http://export.arxiv.org/api/query?search_query=all:{theme}&start=0&max_results={str(taille_docs)}"
 
-    # Requête avec User-Agent
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 
-    # Récupération des données XML
     with urllib.request.urlopen(req) as response:
         xml_data = response.read().decode('utf-8')
 
-    # Conversion XML -> dictionnaire Python
     parsed = xmltodict.parse(xml_data)
 
     # Récupération des articles
@@ -24,9 +21,7 @@ def collect_arxiv_posts(taille_docs: int, theme: str):
     # S'il n'y a qu'un seul article
     if isinstance(entries, dict):
         entries = [entries]
-
-    print("Nombre d'articles ArXiv trouvés :", len(entries))
-
+        
     # Listes contenant les textes
     docs = []
 
