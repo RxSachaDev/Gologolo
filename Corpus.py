@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from tools.text import clean_text
 
 import pandas as pd
 
@@ -211,3 +212,16 @@ class Corpus:
         )
 
         return pd.DataFrame(resultats, columns=["contexte gauche", "expression", "contexte droit"])
+
+    def stats(self) -> None:
+        vocabulary = dict()
+        different_words = set()
+
+        for doc in self.documents.values():
+            text = clean_text(doc.text)
+            words = text.split()
+
+            different_words.update(words)
+
+        for word in different_words:
+            vocabulary[word] = 0

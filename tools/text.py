@@ -1,6 +1,6 @@
 import re
 
-def nettoyer_texte(chaine):
+def clean_text(chaine):
     chaine = chaine.lower()
     chaine = chaine.replace("\n", " ")
     chaine = re.sub(r"[0-9]+", " ", chaine)
