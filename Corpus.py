@@ -1,5 +1,6 @@
 import ast
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -214,29 +215,29 @@ class Corpus:
         return pd.DataFrame(resultats, columns=["contexte gauche", "expression", "contexte droit"])
 
     def stats(self) -> None:
-        vocabulary = dict()
-        different_words = set()
-        document_frequency = dict()
+        occurrences = Counter()
+        document_frequency = Counter()
 
         for doc in self.documents.values():
-            text = clean_text(doc.text)
-            words = text.split()
+            words = clean_text(doc.text).split()
+            occurrences.update(words)
+            document_frequency.update(set(words))
 
-            different_words.update(words)
+        vocab = {
+            word: {
+                "id": identifier,
+                "TF": occurrences[word],
+                "DF": document_frequency[word],
+            }
+            for identifier, word in enumerate(sorted(occurrences))
+        }
 
-            for word in words:
-                if word not in vocabulary:
-                    vocabulary[word] = 1
-                else:
-                    vocabulary[word] += 1
+        freq = pd.DataFrame.from_dict(
+            vocab,
+            orient="index",
+            columns=["id", "TF", "DF"],
+        )
+        freq.index.name = "mot"
 
-            for word in different_words:
-                document_frequency[word] = document_frequency.get(word, 0) + 1
-
-        freq = pd.DataFrame({
-            "TF": vocabulary,
-            "DF": document_frequency
-        })
-
-        print("Nombre de mots différents :", len(different_words))
+        print("Nombre de mots différents :", len(vocab))
         print(freq.sort_values(by="TF", ascending=False).head(10))
