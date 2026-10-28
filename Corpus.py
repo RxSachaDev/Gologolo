@@ -4,9 +4,11 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from tools.text import clean_text
 
 import pandas as pd
+from scipy.sparse import csr_matrix
+
+from tools.text import clean_text
 
 from Document import Document, DocumentFactory
 from Author import Author
@@ -31,12 +33,16 @@ class Corpus:
     id_document: int = 0
     authors: dict[str, Author] = field(default_factory=dict)
     concatenated_text: str = ""
+    vocab: dict[str, dict[str, int]] = field(default_factory=dict)
+    mat_TF: csr_matrix | None = None
 
     def add_document(self, doc: Document) -> None:
         document_id = self.id_document
         self.documents[document_id] = doc
         self.id_document += 1
         self.concatenated_text = ""
+        self.vocab = {}
+        self.mat_TF = None
 
         self._add_document_to_authors(doc)
 
@@ -89,6 +95,8 @@ class Corpus:
         self.id_document = 0
         self.authors.clear()
         self.concatenated_text = ""
+        self.vocab = {}
+        self.mat_TF = None
         if "concatenated_text" in df.columns:
             saved_text = df["concatenated_text"].dropna()
             if not saved_text.empty:
@@ -217,13 +225,15 @@ class Corpus:
     def stats(self) -> None:
         occurrences = Counter()
         document_frequency = Counter()
+        document_term_frequencies = []
 
         for doc in self.documents.values():
-            words = clean_text(doc.text).split()
-            occurrences.update(words)
-            document_frequency.update(set(words))
+            term_frequencies = Counter(clean_text(doc.text).split())
+            document_term_frequencies.append(term_frequencies)
+            occurrences.update(term_frequencies)
+            document_frequency.update(term_frequencies.keys())
 
-        vocab = {
+        self.vocab = {
             word: {
                 "id": identifier,
                 "TF": occurrences[word],
@@ -233,11 +243,31 @@ class Corpus:
         }
 
         freq = pd.DataFrame.from_dict(
-            vocab,
+            self.vocab,
             orient="index",
             columns=["id", "TF", "DF"],
         )
         freq.index.name = "mot"
 
-        print("Nombre de mots différents :", len(vocab))
+        rows = []
+        columns = []
+        values = []
+
+        word_ids = {
+            word: details["id"]
+            for word, details in self.vocab.items()
+        }
+        for document_id, term_frequencies in enumerate(document_term_frequencies):
+            for word, count in term_frequencies.items():
+                rows.append(document_id)
+                columns.append(word_ids[word])
+                values.append(count)
+
+        self.mat_TF = csr_matrix(
+            (values, (rows, columns)),
+            shape=(len(self.documents), len(self.vocab)),
+            dtype=int,
+        )
+
+        print("Nombre de mots différents :", len(self.vocab))
         print(freq.sort_values(by="TF", ascending=False).head(10))
