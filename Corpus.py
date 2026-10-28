@@ -3,10 +3,11 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
+from math import log
 from pathlib import Path
 
 import pandas as pd
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, diags
 
 from tools.text import clean_text
 
@@ -35,6 +36,7 @@ class Corpus:
     concatenated_text: str = ""
     vocab: dict[str, dict[str, int]] = field(default_factory=dict)
     mat_TF: csr_matrix | None = None
+    mat_TFxIDF: csr_matrix | None = None
 
     def add_document(self, doc: Document) -> None:
         document_id = self.id_document
@@ -43,6 +45,7 @@ class Corpus:
         self.concatenated_text = ""
         self.vocab = {}
         self.mat_TF = None
+        self.mat_TFxIDF = None
 
         self._add_document_to_authors(doc)
 
@@ -97,6 +100,7 @@ class Corpus:
         self.concatenated_text = ""
         self.vocab = {}
         self.mat_TF = None
+        self.mat_TFxIDF = None
         if "concatenated_text" in df.columns:
             saved_text = df["concatenated_text"].dropna()
             if not saved_text.empty:
@@ -262,10 +266,19 @@ class Corpus:
 
         total_occurrences = self.mat_TF.sum(axis=0).A1
         document_counts = self.mat_TF.getnnz(axis=0)
+        document_count = len(self.documents)
         for word, details in self.vocab.items():
             word_id = details["id"]
             details["TF"] = int(total_occurrences[word_id])
             details["DF"] = int(document_counts[word_id])
+
+        idf_values = [
+            log(document_count / document_counts[word_id])
+            for word_id in range(len(self.vocab))
+        ]
+        self.mat_TFxIDF = (
+            self.mat_TF @ diags(idf_values, format="csr")
+        ).tocsr()
 
         freq = pd.DataFrame.from_dict(
             self.vocab,
