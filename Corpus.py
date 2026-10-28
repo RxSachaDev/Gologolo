@@ -223,31 +223,22 @@ class Corpus:
         return pd.DataFrame(resultats, columns=["contexte gauche", "expression", "contexte droit"])
 
     def stats(self) -> None:
-        occurrences = Counter()
-        document_frequency = Counter()
         document_term_frequencies = []
+        vocabulary_words = set()
 
         for doc in self.documents.values():
             term_frequencies = Counter(clean_text(doc.text).split())
             document_term_frequencies.append(term_frequencies)
-            occurrences.update(term_frequencies)
-            document_frequency.update(term_frequencies.keys())
+            vocabulary_words.update(term_frequencies)
 
         self.vocab = {
             word: {
                 "id": identifier,
-                "TF": occurrences[word],
-                "DF": document_frequency[word],
+                "TF": 0,
+                "DF": 0,
             }
-            for identifier, word in enumerate(sorted(occurrences))
+            for identifier, word in enumerate(sorted(vocabulary_words))
         }
-
-        freq = pd.DataFrame.from_dict(
-            self.vocab,
-            orient="index",
-            columns=["id", "TF", "DF"],
-        )
-        freq.index.name = "mot"
 
         rows = []
         columns = []
@@ -268,6 +259,20 @@ class Corpus:
             shape=(len(self.documents), len(self.vocab)),
             dtype=int,
         )
+
+        total_occurrences = self.mat_TF.sum(axis=0).A1
+        document_counts = self.mat_TF.getnnz(axis=0)
+        for word, details in self.vocab.items():
+            word_id = details["id"]
+            details["TF"] = int(total_occurrences[word_id])
+            details["DF"] = int(document_counts[word_id])
+
+        freq = pd.DataFrame.from_dict(
+            self.vocab,
+            orient="index",
+            columns=["id", "TF", "DF"],
+        )
+        freq.index.name = "mot"
 
         print("Nombre de mots différents :", len(self.vocab))
         print(freq.sort_values(by="TF", ascending=False).head(10))
