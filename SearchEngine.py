@@ -9,11 +9,14 @@ from Corpus import Corpus
 from tools.text import clean_text
 
 class SearchEngine:
+    """Classe les documents du corpus selon leur pertinence pour une requête."""
+
     def __init__(self, corpus: Corpus) -> None:
         self.corpus = corpus
         self.corpus._build_term_matrices()
 
     def search(self, mots_clefs: str, n: int) -> pd.DataFrame:
+        """Retourne les n meilleurs résultats selon la similarité cosinus TF-IDF."""
         columns = ["id", "title", "author", "source", "date", "url", "score"]
         word_frequencies = Counter(clean_text(mots_clefs).split())
         if not word_frequencies or not self.corpus.documents:
@@ -53,6 +56,7 @@ class SearchEngine:
             .sum(axis=1)
             .A1
         ) ** 0.5
+        # Le produit scalaire mesure la proximité avant la normalisation cosinus.
         dot_products = (
             self.corpus.mat_TFxIDF @ query_vector.T
         ).toarray().ravel()

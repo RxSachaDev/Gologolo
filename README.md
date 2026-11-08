@@ -58,8 +58,13 @@ REDDIT_USER_AGENT=Gologolo/1.0 par u/votre_nom_utilisateur
 
 ## Exécution
 
-La première exécution collecte les publications du thème configuré dans
-`main.py` depuis Reddit et Arxiv, puis crée `corpus.csv` :
+Utilisez le fichier `corpus.csv` fourni dans le dernier commit du dépôt. Après
+avoir récupéré les dernières modifications (`git pull` sur la branche `main`),
+conservez ce fichier : `main.py` et le notebook `recherche.ipynb` le chargent
+directement.
+
+Si `corpus.csv` est absent, `main.py` collecte les publications du thème
+configuré dans le code depuis Reddit et Arxiv, puis crée le fichier :
 
 ```powershell
 python main.py
@@ -68,8 +73,8 @@ python main.py
 Le programme demande ensuite un nom d'auteur et des mots-clés. Les exécutions
 suivantes réutilisent le corpus sauvegardé. Pour ouvrir l'interface, ouvrez
 `recherche.ipynb` dans VS Code, sélectionnez l'environnement `.venv`, puis
-exécutez les cellules. Le notebook utilise le fichier `corpus.csv` créé par
-`main.py`.
+exécutez les cellules.
 
-`corpus.csv` et `.env` sont des fichiers locaux ignorés par Git ; le corpus
-est régénéré sur la machine de l'utilisateur.
+Le fichier `.env` est local et ignoré par Git. `corpus.csv` est versionné dans
+le dépôt ; ne le remplacez pas par une ancienne copie si vous devez utiliser le
+corpus du dernier commit.

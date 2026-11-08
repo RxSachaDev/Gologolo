@@ -59,7 +59,7 @@ class Corpus:
         self.authors[doc.author].add(doc)
 
     def save(self, path: str = "corpus.csv") -> None:
-
+        """Enregistre le corpus en TSV, avec les champs propres à chaque source."""
         rows = [
             {
                 "corpus_name": self.name,
@@ -87,6 +87,7 @@ class Corpus:
         pd.DataFrame(rows).to_csv(path, sep="\t", index=False)
 
     def load(self, path: str = "corpus.csv") -> "Corpus":
+        """Reconstruit les documents et les auteurs depuis un fichier TSV."""
         df = pd.read_csv(path, sep="\t")
         if "corpus_name" in df.columns and not df["corpus_name"].dropna().empty:
             corpus_name = str(df["corpus_name"].dropna().iloc[0])
@@ -227,6 +228,7 @@ class Corpus:
         return pd.DataFrame(resultats, columns=["contexte gauche", "expression", "contexte droit"])
 
     def _build_term_matrices(self) -> None:
+        # Une ligne représente un document et une colonne un terme du vocabulaire.
         document_term_frequencies = []
         vocabulary_words = set()
 
@@ -273,6 +275,7 @@ class Corpus:
             details["DF"] = int(document_counts[word_id])
 
         idf_values = [
+            # Un terme partagé par tous les documents reçoit un poids IDF nul.
             log(document_count / document_counts[word_id])
             for word_id in range(len(self.vocab))
         ]

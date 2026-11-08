@@ -13,6 +13,7 @@ if __name__ == "__main__":
     corpus_path = "corpus.csv"
     corpus = Corpus(name=theme)
     if os.path.exists(corpus_path):
+        # Le corpus versionné est réutilisé
         corpus.load(corpus_path)
     else:
         docs_reddit = collect_reddit_posts(taille_docs, theme)
