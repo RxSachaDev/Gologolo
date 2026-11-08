@@ -7,7 +7,7 @@ from arxiv_data import collect_arxiv_posts
 
 if __name__ == "__main__":
 
-    taille_docs = 10
+    taille_docs = 1000
     theme = "tennis"
 
     corpus_path = "corpus.csv"
