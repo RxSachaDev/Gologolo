@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from Corpus import Corpus
+from SearchEngine import SearchEngine
 from reddit_data import collect_reddit_posts
 from arxiv_data import collect_arxiv_posts
 
@@ -22,7 +23,7 @@ if __name__ == "__main__":
 
     corpus.save(corpus_path)
     corpus.load(corpus_path)
-    print(corpus)
+    # print(corpus)
 
     author_name = input("Nom de l'auteur : ").strip()
     if author_name in corpus.authors:
@@ -34,6 +35,14 @@ if __name__ == "__main__":
         print(f"Taille moyenne : {average_words:.2f} mots")
     else:
         print("Auteur introuvable")
+
+    query = input("Mots-clés de recherche : ").strip()
+    search_engine = SearchEngine(corpus)
+    results = search_engine.search(query, n=10)
+    if results.empty:
+        print("Aucun document pertinent trouvé.")
+    else:
+        print(results)
 
     df = pd.DataFrame([
         {
@@ -47,16 +56,16 @@ if __name__ == "__main__":
         }
         for document_id, doc in corpus.documents.items()
     ])
-    print(df)
+    # print(df)
 
-    print(len(df))
+    # print(len(df))
     
-    for articles in df['text']:
-        print(f" le nomber de mots est {len(articles.split(' '))}")
-        print(f" le nomber de phrases est {len(articles.split('.'))}")
+    # for articles in df['text']:
+    #     print(f" le nomber de mots est {len(articles.split(' '))}")
+    #     print(f" le nomber de phrases est {len(articles.split('.'))}")
     
     df = df[df["text"].str.len() >= 100]
     
     corpus = " ".join(df["text"])
     
-    print(corpus)
+    # print(corpus)

@@ -226,7 +226,7 @@ class Corpus:
 
         return pd.DataFrame(resultats, columns=["contexte gauche", "expression", "contexte droit"])
 
-    def stats(self) -> None:
+    def _build_term_matrices(self) -> None:
         document_term_frequencies = []
         vocabulary_words = set()
 
@@ -280,6 +280,8 @@ class Corpus:
             self.mat_TF @ diags(idf_values, format="csr")
         ).tocsr()
 
+    def stats(self) -> None:
+        self._build_term_matrices()
         freq = pd.DataFrame.from_dict(
             self.vocab,
             orient="index",
