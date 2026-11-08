@@ -53,7 +53,7 @@ Copy-Item .env.example .env
 ```dotenv
 REDDIT_CLIENT_ID=votre_client_id
 REDDIT_CLIENT_SECRET=votre_client_secret
-REDDIT_USER_AGENT=Gologolo/1.0 par u/votre_nom_utilisateur
+REDDIT_USER_AGENT=u/votre_nom_utilisateur
 ```
 
 ## Exécution
